@@ -55,6 +55,7 @@ use OCP\IRequest;
 use OCP\ITempManager;
 use OCP\IURLGenerator;
 use OCP\Lock\ILockingProvider;
+use OCP\Notification\IManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
@@ -102,6 +103,8 @@ class CheckSetupControllerTest extends TestCase {
 	private $connection;
 	/** @var ITempManager|\PHPUnit\Framework\MockObject\MockObject */
 	private $tempManager;
+	/** @var IManager|\PHPUnit\Framework\MockObject\MockObject */
+	private $manager;
 
 	/**
 	 * Holds a list of directories created during tests.
@@ -145,6 +148,7 @@ class CheckSetupControllerTest extends TestCase {
 		$this->connection = $this->getMockBuilder(IDBConnection::class)
 			->disableOriginalConstructor()->getMock();
 		$this->tempManager = $this->getMockBuilder(ITempManager::class)->getMock();
+		$this->manager = $this->getMockBuilder(IManager::class)->getMock();
 		$this->checkSetupController = $this->getMockBuilder(CheckSetupController::class)
 			->setConstructorArgs([
 				'settings',
@@ -164,6 +168,7 @@ class CheckSetupControllerTest extends TestCase {
 				$this->iniGetWrapper,
 				$this->connection,
 				$this->tempManager,
+				$this->manager,
 			])
 			->setMethods([
 				'isReadOnlyConfig',
@@ -185,7 +190,6 @@ class CheckSetupControllerTest extends TestCase {
 				'hasRecommendedPHPModules',
 				'hasBigIntConversionPendingColumns',
 				'isMysqlUsedWithoutUTF8MB4',
-				'isEnoughTempSpaceAvailableIfS3PrimaryStorageIsUsed',
 				'isEnoughTempSpaceAvailableIfS3PrimaryStorageIsUsed',
 			])->getMock();
 	}
@@ -623,6 +627,8 @@ class CheckSetupControllerTest extends TestCase {
 				'imageMagickLacksSVGSupport' => false,
 				'isDefaultPhoneRegionSet' => false,
 				'OCA\Settings\SetupChecks\SupportedDatabase' => ['pass' => true, 'description' => '', 'severity' => 'info'],
+				'isFairUseOfFreePushService' => false,
+				'temporaryDirectoryWritable' => false,
 			]
 		);
 		$this->assertEquals($expected, $this->checkSetupController->check());
@@ -647,6 +653,8 @@ class CheckSetupControllerTest extends TestCase {
 				$this->secureRandom,
 				$this->iniGetWrapper,
 				$this->connection,
+				$this->tempManager,
+				$this->manager,
 			])
 			->setMethods(null)->getMock();
 
@@ -1416,7 +1424,9 @@ Array
 				$this->memoryInfo,
 				$this->secureRandom,
 				$this->iniGetWrapper,
-				$this->connection
+				$this->connection,
+				$this->tempManager,
+				$this->manager,
 			);
 
 		$this->assertSame($expected, $this->invokePrivate($checkSetupController, 'isMysqlUsedWithoutUTF8MB4'));
@@ -1466,7 +1476,9 @@ Array
 			$this->memoryInfo,
 			$this->secureRandom,
 			$this->iniGetWrapper,
-			$this->connection
+			$this->connection,
+			$this->tempManager,
+			$this->manager,
 		);
 
 		$this->assertSame($expected, $this->invokePrivate($checkSetupController, 'isEnoughTempSpaceAvailableIfS3PrimaryStorageIsUsed'));
