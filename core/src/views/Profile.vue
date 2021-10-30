@@ -142,7 +142,7 @@
 							fill-color="var(--color-text-maxcontrast)"
 							:size="60" />
 						<h3>{{ displayname || userId }} {{ t('core', 'hasn\'t added any info yet') }}</h3>
-						<p>{{ t('core', 'The headline and about section will show up here') }}</p>
+						<p>{{ t('core', 'The headline and about sections will show up here') }}</p>
 					</div>
 				</template>
 			</div>
